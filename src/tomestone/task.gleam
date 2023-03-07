@@ -18,6 +18,20 @@ pub fn lift(value: a) -> Awaitable(a) {
   do_lift(value)
 }
 
+
+/// Convert a function into an async function. This is useful for running a
+/// syncronous function, such as `io.println`, in the event loop.
+///
+/// ```gleam
+/// fn do_suff() -> task.Awaitable(Nil) {
+///   use value <- task.await(task.async(fn() { "Hello World" }))
+///   io.println(value)
+/// }
+/// ```
+pub fn async(value: fn() -> a) -> Awaitable(a) {
+  do_async(value)
+}
+
 /// Await a task.
 ///
 /// ```gleam
@@ -69,7 +83,7 @@ pub fn run_until_complete(task: Awaitable(a)) -> Nil {
 }
 
 if erlang {
-  pub external fn async(fn() -> any) -> Awaitable(a) =
+  pub external fn async_ex(fn() -> any) -> Awaitable(a) =
     "Elixir.Task" "async"
 
   external fn await_ex(Awaitable(a)) -> a =
@@ -88,7 +102,7 @@ if erlang {
 
   fn do_await(task: Awaitable(a), callback: fn(a) -> b) -> Awaitable(b) {
     let res = await_ex(task)
-    async(fn() { callback(res) })
+    async_ex(fn() { callback(res) })
   }
 
   fn do_gather(
@@ -96,7 +110,7 @@ if erlang {
     callback: fn(List(a)) -> b,
   ) -> Awaitable(b) {
     let res = await_many_ex(tasks)
-    async(fn() { callback(res) })
+    async_ex(fn() { callback(res) })
   }
 
   fn do_run_until_complete(task: Awaitable(a)) -> Nil {
@@ -104,8 +118,12 @@ if erlang {
     Nil
   }
 
+  fn do_async(callback: fn() -> a) -> Awaitable(a) {
+    async_ex(callback)
+  }
+
   fn do_lift(value: a) -> Awaitable(a) {
-    async(fn() { value })
+    async_ex(fn() { value })
   }
 }
 
@@ -156,6 +174,10 @@ if javascript {
 
   fn do_run_until_complete(_task: Awaitable(a)) -> Nil {
     Nil
+  }
+
+  fn do_async(callback: fn() -> a) -> Awaitable(a) {
+    await_js(lift(0), fn(_) {callback()})
   }
 
   fn do_lift(value: a) -> Awaitable(a) {
