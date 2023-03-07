@@ -1,5 +1,7 @@
 //// This module contains tools for working with async.
 
+import gleam/dynamic
+
 pub external type Awaitable(a)
 
 if erlang {
@@ -32,6 +34,8 @@ if erlang {
 }
 
 if javascript {
+  import gleam/javascript/promise
+
   external fn await_js(task: Awaitable(a), callback: fn(a) -> b) -> Awaitable(b) =
     "../promise.mjs" "await_"
 
@@ -40,6 +44,18 @@ if javascript {
     callback: fn(List(a)) -> b,
   ) -> Awaitable(b) =
     "../promise.mjs" "awaitMany"
+
+  /// Convert an `Awaitable` to a promise. This can be useful when working with
+  /// a library with different types.
+  pub fn awaitable2promise(task: Awaitable(a)) -> promise.Promise(a) {
+    dynamic.unsafe_coerce(dynamic.from(task))
+  }
+
+  /// Convert a `Promise` to an `Awaitable`. This can be useful when working with
+  /// a library with different types.
+  pub fn promise2awaitable(promise: promise.Promise(a)) -> Awaitable(a) {
+    dynamic.unsafe_coerce(dynamic.from(promise))
+  }
 
   pub fn await(task: Awaitable(a), callback: fn(a) -> b) -> Awaitable(b) {
     await_js(task, fn(a) { callback(a) })
