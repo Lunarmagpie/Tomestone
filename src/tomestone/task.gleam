@@ -18,7 +18,6 @@ pub fn lift(value: a) -> Awaitable(a) {
   do_lift(value)
 }
 
-
 /// Convert a function into an async function. This is useful for running a
 /// syncronous function, such as `io.println`, in the event loop.
 ///
@@ -82,7 +81,24 @@ pub fn run_until_complete(task: Awaitable(a)) -> Nil {
   do_run_until_complete(task)
 }
 
+/// Wait for a given amount of milliseconds.
+///
+/// ```gleam
+/// fn do_stuff() -> task.Awaitable(String) {
+///   // Sleep for 5 seconds.
+///   use <- task.sleep(5000)
+///   "hello world"
+/// }
+/// ```
+///
+pub fn sleep(time: Int, callback: fn() -> a) -> Awaitable(a) {
+  do_sleep(time, callback)
+}
+
 if erlang {
+  import gleam/erlang/process
+  import gleam/io
+
   pub external fn async_ex(fn() -> any) -> Awaitable(a) =
     "Elixir.Task" "async"
 
@@ -125,6 +141,13 @@ if erlang {
   fn do_lift(value: a) -> Awaitable(a) {
     async_ex(fn() { value })
   }
+
+  fn do_sleep(time: Int, callback: fn() -> a) -> Awaitable(a) {
+    async_ex(fn() {
+      process.sleep(time)
+      callback()
+    })
+  }
 }
 
 if javascript {
@@ -142,6 +165,9 @@ if javascript {
 
   external fn resolve_js(a) -> Awaitable(a) =
     "../promise.mjs" "resolve"
+
+  external fn sleep_js(Int, fn() -> a) -> Awaitable(a) =
+    "../promise.mjs" "sleep"
 
   /// Convert an `Awaitable` to a promise. This can be useful when working with
   /// a library with different types.
@@ -177,10 +203,14 @@ if javascript {
   }
 
   fn do_async(callback: fn() -> a) -> Awaitable(a) {
-    await_js(lift(0), fn(_) {callback()})
+    await_js(lift(0), fn(_) { callback() })
   }
 
   fn do_lift(value: a) -> Awaitable(a) {
     resolve_js(value)
+  }
+
+  fn do_sleep(time: Int, callback: fn() -> a) -> Awaitable(a) {
+    sleep_js(time, callback)
   }
 }

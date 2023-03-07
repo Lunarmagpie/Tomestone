@@ -16,3 +16,8 @@ export async function gather(promises, callback) {
 export async function resolve(value) {
     return Promise.resolve(value)
 }
+
+export async function sleep(time, callback) {
+    await new Promise(value => setTimeout(value, time));
+    return callback()
+}
