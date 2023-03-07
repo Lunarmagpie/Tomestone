@@ -35,7 +35,7 @@ pub fn await(task: Awaitable(a), callback: fn(a) -> b) -> Awaitable(b) {
 ///
 /// ```gleam
 /// fn open_file() -> task.Awaitable(List(String)) {
-///   use contents <- task.await_many([
+///   use contents <- task.gather([
 ///     fs.read_file("notes1.txt"),
 ///     fs.read_file("notes2.txt"),
 ///   ])
@@ -44,11 +44,11 @@ pub fn await(task: Awaitable(a), callback: fn(a) -> b) -> Awaitable(b) {
 ///   |> result.unwrap("file not found")
 /// }
 /// ```
-pub fn await_many(
+pub fn gather(
   tasks: List(Awaitable(a)),
   callback: fn(List(a)) -> b,
 ) -> Awaitable(b) {
-  do_await_many(tasks, callback)
+  do_gather(tasks, callback)
 }
 
 /// Run a task until it is complete.
@@ -91,7 +91,7 @@ if erlang {
     async(fn() { callback(res) })
   }
 
-  fn do_await_many(
+  fn do_gather(
     tasks: List(Awaitable(a)),
     callback: fn(List(a)) -> b,
   ) -> Awaitable(b) {
@@ -116,11 +116,11 @@ if javascript {
   external fn await_js(task: Awaitable(a), callback: fn(a) -> b) -> Awaitable(b) =
     "../promise.mjs" "await_"
 
-  external fn await_many_js(
+  external fn gather_js(
     tasks: List(Awaitable(a)),
     callback: fn(List(a)) -> b,
   ) -> Awaitable(b) =
-    "../promise.mjs" "awaitMany"
+    "../promise.mjs" "gather"
 
   external fn resolve_js(a) -> Awaitable(a) =
     "../promise.mjs" "resolve"
@@ -147,11 +147,11 @@ if javascript {
     await_js(task, fn(a) { callback(a) })
   }
 
-  fn do_await_many(
+  fn do_gather(
     tasks: List(Awaitable(a)),
     callback: fn(List(a)) -> b,
   ) -> Awaitable(b) {
-    await_many_js(tasks, callback)
+    gather_js(tasks, callback)
   }
 
   fn do_run_until_complete(_task: Awaitable(a)) -> Nil {

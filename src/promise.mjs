@@ -8,7 +8,7 @@ export async function await_(promise, callback) {
     return callback(value);
 }
 
-export async function awaitMany(promises, callback) {
+export async function gather(promises, callback) {
     const values = await Promise.all(promises);
     return callback(toList(values));
 }
