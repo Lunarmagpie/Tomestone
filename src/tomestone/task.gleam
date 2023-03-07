@@ -1,9 +1,18 @@
 //// This module contains tools for working with async.
 
-/// Represents the future result of a function.
-/// This is a wrapper around `Task.Task` when using erlang, and `Promise`
-/// when using javascript.
-pub external type Awaitable(a)
+if javascript {
+  import gleam/javascript/promise
+
+  /// Represents the future result of a function.
+  /// This is a wrapper around `Task.Task` when using erlang, and `Promise`
+  /// when using javascript.
+  pub type Awaitable(a) =
+    promise.Promise(a)
+}
+
+if erlang {
+  pub external type Awaitable(a)
+}
 
 /// Convert a value into an `Awaitable` that returns said value.
 ///
@@ -151,9 +160,6 @@ if erlang {
 }
 
 if javascript {
-  import gleam/dynamic
-  import gleam/javascript/promise
-
   external fn await_js(task: Awaitable(a), callback: fn(a) -> b) -> Awaitable(b) =
     "../promise.mjs" "await_"
 
@@ -168,24 +174,6 @@ if javascript {
 
   external fn sleep_js(Int, fn() -> a) -> Awaitable(a) =
     "../promise.mjs" "sleep"
-
-  /// Convert an `Awaitable` to a promise. This can be useful when working with
-  /// a library with different types.
-  ///
-  /// > ⚠️ This function is only available when using javascript.
-  ///
-  pub fn awaitable2promise(task: Awaitable(a)) -> promise.Promise(a) {
-    dynamic.unsafe_coerce(dynamic.from(task))
-  }
-
-  /// Convert a `Promise` to an `Awaitable`. This can be useful when working with
-  /// a library with different types.
-  ///
-  /// > ⚠️ This function is only available when using javascript.
-  ///
-  pub fn promise2awaitable(promise: promise.Promise(a)) -> Awaitable(a) {
-    dynamic.unsafe_coerce(dynamic.from(promise))
-  }
 
   fn do_await(task: Awaitable(a), callback: fn(a) -> b) -> Awaitable(b) {
     await_js(task, fn(a) { callback(a) })
