@@ -3,7 +3,14 @@
 [![Package Version](https://img.shields.io/hexpm/v/tomestone)](https://hex.pm/packages/tomestone)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/tomestone/)
 
-A Gleam project
+Tomestone is a library for developing platform independent code. It provides tools to get your code
+running on BEAM, node, and deno.
+
+Features
+
+- Task API that works on all platforms
+- Environment Variables
+- Filesystem
 
 ## Quick start
 

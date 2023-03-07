@@ -53,7 +53,7 @@ export async function readFile(path) {
         const data = await fs.readFile(path, 'utf-8');
         return new Ok(data);
     } catch (err) {
-        return callback(handleError(err));
+        return handleError(err);
     }
 }
 

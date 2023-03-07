@@ -1,6 +1,6 @@
 name = "tomestone"
 version = "0.1.0"
-description = "A Gleam project"
+description = "A library for developing platform independent code."
 target = "javascript"
 licences = ["Apache-2.0"]
 repository = { type = "github", user = "username", repo = "project" }
