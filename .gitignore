@@ -1,3 +1,4 @@
+tomestone.gleam
 *.beam
 *.ez
 build

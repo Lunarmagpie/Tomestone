@@ -14,6 +14,10 @@ if erlang {
   external fn await_many_ex(List(Awaitable(a))) -> List(a) =
     "Elixir.Task" "await_many"
 
+  pub fn to_sync(task: Awaitable(a)) -> a {
+    await_ex(task)
+  }
+
   pub fn await(task: Awaitable(a), callback: fn(a) -> b) -> Awaitable(b) {
     let res = await_ex(task)
     async(fn() { callback(res) })
