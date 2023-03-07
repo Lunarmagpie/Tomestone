@@ -3,14 +3,11 @@ import tomestone/fs
 import tomestone/task
 import tomestone/env
 
-fn open_file(path: String) -> task.Awaitable(String) {
-  use resp <- task.await(fs.read_file(path))
-  let assert Ok(content) = resp
-  content
-}
-
 fn async_main() -> task.Awaitable(Nil) {
-  use content <- task.await(open_file("README.md"))
+  use content <- task.await_many([
+    fs.read_file(".gitignore"),
+    fs.read_file("README.md"),
+  ])
   io.debug(content)
   Nil
 }
